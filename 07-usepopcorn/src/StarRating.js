@@ -16,7 +16,7 @@ function StarRating({
   size = 48,
   layoutClassName,
   defaultRating = 0,
-  onSetRating,
+  onSetRating = (rating) => {},
 }) {
   const [rating, setRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
