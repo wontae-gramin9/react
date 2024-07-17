@@ -71,12 +71,15 @@ export default function App() {
 
   // SIDE EFFECT: setTimeout, Http request, anything outside of the function(component)
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchMovies() {
       try {
         setIsLoading(true); // useEffect콜백은 sync이기에 가능
         setError(""); // 이전 fetch에서 error가 정해질 수 있으니 초기화하는 것
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
+          `http://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`,
+          { signal: controller.signal }
         );
 
         if (!res.ok)
@@ -87,9 +90,12 @@ export default function App() {
 
         setMovies(data.Search);
       } catch (e) {
-        setError(e.message);
+        if (e.name !== "AbortError") {
+          setError(e.message);
+        }
       } finally {
         setIsLoading(false);
+        setError("");
       }
       // console.log(movies); // Stale value: since rendering is async, it remains the old value
     }
@@ -106,6 +112,10 @@ export default function App() {
     //   .then((data) => {
     //     setMovies(data.search);
     //   });
+
+    return () => {
+      controller.abort();
+    };
   }, [query]);
 
   // DEPENDENCY ARRAY
