@@ -208,6 +208,12 @@ function MoiveDetail({ selectedId, watchedList, onCloseMovie, onAddWatched }) {
 
   useEffect(() => {
     document.title = `Movie | ${title}`;
+    return () => {
+      document.title = `usePopcorn`;
+      console.log(
+        `Cleanup function executes after every unmount, so all states removed. But thanks to closure, it remembers ${title}`
+      );
+    };
   }, [title]);
 
   function handleAdd() {
