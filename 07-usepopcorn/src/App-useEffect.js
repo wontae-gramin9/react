@@ -1,28 +1,75 @@
 import { useState, useEffect } from "react";
 import StarRating from "./StarRating";
 
+const tempMovieData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+  },
+  {
+    imdbID: "tt0133093",
+    Title: "The Matrix",
+    Year: "1999",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
+  },
+  {
+    imdbID: "tt6751668",
+    Title: "Parasite",
+    Year: "2019",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
+  },
+];
+
+const tempWatchedData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    runtime: 148,
+    imdbRating: 8.8,
+    userRating: 10,
+  },
+  {
+    imdbID: "tt0088763",
+    Title: "Back to the Future",
+    Year: "1985",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+    runtime: 116,
+    imdbRating: 8.5,
+    userRating: 9,
+  },
+];
+
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 const API_KEY = "6fbe11f5";
 
 export default function App() {
-  // useState의 default값은 initialRender에서만 참조당하고
-  // rerender에서는 더이상 참조하지 않는다.
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState(() => {
-    const watched = localStorage.getItem("watched");
-    return JSON.parse(watched);
-  });
+  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState("tt11738830");
 
-  useEffect(() => {
-    localStorage.setItem("watched", JSON.stringify(watched));
-  }, [watched]);
+  // Breaking "Never update state in render logic"
+  // fetch(`http://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=interstellar`)
+  //   .then((res) => res.json())
+  //   .then((data) => {
+  //     setMovies(data.search);
+  //   }); // INFINITE LOOP → NETWORK REQUEST
+  // setWatched([]); // INFINITE LOOP
 
+  // SIDE EFFECT: setTimeout, Http request, anything outside of the function(component)
   useEffect(() => {
     const controller = new AbortController();
 
@@ -61,11 +108,31 @@ export default function App() {
 
     handleCloseMovie();
     fetchMovies();
+    // fetch(`http://www.omdbapi.com/?apikey=${API_KEY}&s=interstellar`)
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     setMovies(data.search);
+    //   });
 
     return () => {
       controller.abort();
     };
   }, [query]);
+
+  // DEPENDENCY ARRAY
+  // useEffect(() => {
+  //   console.log("After initial render");
+  // }, []);
+
+  // useEffect(() => {
+  //   console.log("After every render");
+  // });
+
+  // useEffect(() => {
+  //   console.log("After every query update");
+  // }, [query]);
+
+  // console.log("During render");
 
   function handleSelectMovie(id) {
     // 같은 걸 다시 선택하면 닫힌다.
@@ -83,6 +150,10 @@ export default function App() {
   return (
     <>
       <NavBar movies={movies}>
+        {/* Fixing Prop Drilling with Composition
+      prop drilling을 최소화하려면
+      해당 prop이 실제로 필요하지 않은데 children에게 prop을 전달해줘야 하는 상황이라면
+      그냥 children으로 보내주는 것이 더 깔끔하다 */}
         <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
@@ -166,6 +237,8 @@ function MoiveDetail({ selectedId, watchedList, onCloseMovie, onAddWatched }) {
     document.addEventListener("keydown", handleKeydown);
 
     return () => {
+      // 쉽게 생각하면, fetch라던가 addEventListener같은 sideEffect와 연결했으면
+      // 꺼주는게 맞다 → 같은 변수에 넣어줘야 한다.
       document.removeEventListener("keydown", handleKeydown);
     };
   }, [onCloseMovie]);
