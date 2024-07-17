@@ -121,6 +121,13 @@ function MoiveDetail({ selectedId, watchedList, onCloseMovie, onAddWatched }) {
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState(null);
 
+  const countRef = useRef(0);
+  useEffect(() => {
+    if (useEffect) {
+      countRef.current++;
+    }
+  }, [userRating]);
+
   const {
     Title: title,
     Year: year,
@@ -179,6 +186,7 @@ function MoiveDetail({ selectedId, watchedList, onCloseMovie, onAddWatched }) {
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating,
+      countRatingDecision: countRef.current,
     };
     onAddWatched(newWatched);
     onCloseMovie();
