@@ -206,6 +206,10 @@ function MoiveDetail({ selectedId, watchedList, onCloseMovie, onAddWatched }) {
       });
   }, [selectedId]);
 
+  useEffect(() => {
+    document.title = `Movie | ${title}`;
+  }, [title]);
+
   function handleAdd() {
     const newWatched = {
       imdbID: selectedId,
