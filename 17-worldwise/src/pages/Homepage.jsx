@@ -4,8 +4,8 @@ export default function Homepage() {
   return (
     <div>
       <PageNav />
-      <h1>WorldWise</h1>
-      <Link to="/pricing">Pricing</Link>
+      <h1 className="global">WorldWise</h1>
+      <Link to="/app">Go to the app</Link>
     </div>
   );
 }

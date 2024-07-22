@@ -1,0 +1,20 @@
+.nav {
+  background-color: orangered;
+}
+
+.nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+}
+
+.nav :global(.active) {
+  /* global키워드는 className이 salt없이 그대로 반영되게 한다 */
+  /* NavLink는 active className을 가지고있는데, css module로 salt가 붙으면
+  인식하지 못하는 문제가 있기 때문  */
+  background-color: green;
+}
+
+:global(.global) {
+  background-color: red;
+}
