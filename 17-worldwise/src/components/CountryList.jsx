@@ -6,10 +6,6 @@ import Message from "./Message";
 export default function CountryList({ cities, isLoading }) {
   if (isLoading) return <Spinner />;
   if (!cities.length) return <Message message="Add your first city" />;
-  // const countries = cities.map((city) => ({
-  //   country: city.country,
-  //   emoji: city.emoji,
-  // }));
 
   const countries = cities.reduce((acc, city) => {
     if (
