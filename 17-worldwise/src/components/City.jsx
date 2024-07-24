@@ -17,8 +17,6 @@ function City() {
   // cities/:id
   const { id } = useParams();
   const { isLoading, currentCity, getCity } = useCity();
-  console.log(currentCity);
-  // TEMP DATA
 
   useEffect(() => {
     getCity(id);

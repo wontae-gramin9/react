@@ -8,6 +8,7 @@ export default function BackButton() {
       type="back"
       onClick={(e) => {
         e.preventDefault();
+        // Form 내부에 있어도 Form을 submit하지 않는다.
         navigate(-1);
       }}
     >
