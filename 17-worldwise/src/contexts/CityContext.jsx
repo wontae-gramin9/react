@@ -1,26 +1,58 @@
 import { createContext } from "react";
-import { useState, useContext, useEffect } from "react";
+import { useContext, useEffect, useReducer } from "react";
 
 const BASE_URL = "http://localhost:9000";
 const CityContext = createContext();
 
+const initialState = {
+  cities: [],
+  loading: false,
+  currentCity: {},
+  error: "",
+};
+function reducer(state, action) {
+  switch (action.type) {
+    case "loading":
+      return { ...state, isLoading: true };
+    case "cities/loaded": // Naming convention: setter보다는 event로 이름짓기
+      return { ...state, isLoading: false, cities: action.payload };
+    case "city/loaded":
+      return { ...state, isLoading: false, currentCity: action.payload };
+    case "city/created":
+      return {
+        ...state,
+        isLoading: false,
+        cities: [...state.cities, action.payload],
+      };
+    case "city/deleted":
+      return {
+        ...state,
+        isLoading: false,
+        cities: state.cities.filter((city) => city.id !== action.payload),
+      };
+    case "rejected":
+      return { ...state, isLoading: false, error: action.payload };
+    default:
+      throw new Error("Unknown action type");
+  }
+}
+
 function CityProvider({ children }) {
-  const [cities, setCities] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentCity, setCurrentCity] = useState({});
+  const [{ cities, isLoading, currentCity }, dispatch] = useReducer(
+    reducer,
+    initialState
+  );
 
   useEffect(() => {
     const fetchCities = async () => {
+      dispatch({ type: "loading" });
       try {
-        setIsLoading(true);
         const res = await fetch(`${BASE_URL}/cities`);
         if (!res.ok) throw new Error("/cities resource 문제");
         const data = await res.json();
-        setCities(data);
+        dispatch({ type: "cities/loaded", payload: data });
       } catch (error) {
-        alert("/cities 네트워크/서버 문제:", error);
-      } finally {
-        setIsLoading(false);
+        dispatch({ type: "rejected", payload: error });
       }
     };
 
@@ -28,22 +60,21 @@ function CityProvider({ children }) {
   }, []);
 
   async function getCity(id) {
+    if (Number(id) === currentCity.id) return;
+    dispatch({ type: "loading" });
     try {
-      setIsLoading(true);
       const res = await fetch(`${BASE_URL}/cities/${id}`);
       if (!res.ok) throw new Error("/cities/:id resource 문제");
       const data = await res.json();
-      setCurrentCity(data);
+      dispatch({ type: "city/loaded", payload: data });
     } catch (e) {
-      alert("/cities/:id 네트워크/서버 문제:", e);
-    } finally {
-      setIsLoading(false);
+      dispatch({ type: "rejected", payload: e });
     }
   }
 
   async function createCity(newCity) {
+    dispatch({ type: "loading" });
     try {
-      setIsLoading(true);
       const header = new Headers({ "content-type": "application/json" });
       const res = await fetch(`${BASE_URL}/cities`, {
         header,
@@ -52,28 +83,23 @@ function CityProvider({ children }) {
       });
       if (!res.ok) throw new Error("create 문제");
       const data = await res.json();
-      console.log(data);
-      setCities([...cities, data]);
+      dispatch({ type: "city/created", payload: data });
     } catch (e) {
-      alert(e);
-    } finally {
-      setIsLoading(false);
+      dispatch({ type: "rejected", payload: e });
     }
   }
 
   async function deleteCity(id) {
+    dispatch({ type: "loading" });
     try {
-      setIsLoading(true);
       const header = new Headers({ "content-type": "application/json" });
       await fetch(`${BASE_URL}/cities`, {
         header,
         method: "DELETE",
       });
-      setCities((cities) => cities.filter((city) => city.id !== id));
+      dispatch({ type: "city/deleted", payload: id });
     } catch (e) {
-      alert(e);
-    } finally {
-      setIsLoading(false);
+      dispatch({ type: "rejected", payload: e });
     }
   }
 
@@ -83,6 +109,7 @@ function CityProvider({ children }) {
         cities,
         isLoading,
         currentCity,
+
         getCity,
         createCity,
         deleteCity,

@@ -15,7 +15,7 @@ const formatDate = (date) =>
 
 function City() {
   // cities/:id
-  const { id } = useParams();
+  const { id } = useParams(); // string
   const { isLoading, currentCity, getCity } = useCity();
 
   useEffect(() => {
