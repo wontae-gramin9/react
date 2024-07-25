@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -41,10 +41,16 @@ function App() {
     [isFakeDark]
   );
 
-  const archiveOptions = {
-    show: false,
-    title: "Post archive in addition to main posts",
-  };
+  const archiveOptions = useMemo(
+    () => ({
+      show: false,
+      title: `Post archive in addition to ${posts.length} main posts`,
+    }),
+    // useEffect처럼 dependancy array의 값이 변할때만 다시 recalculate
+    // 빈 array일때는 initial render에만 실행되어 값을 받아놓고 caching한다
+    [posts.length] // 만약 dependancy array에 값을 제대로 넣어주지 않는다면
+    // update된 값이 아니라 stale한 값을 계속 사용하게 된다.
+  );
 
   return (
     <section>
