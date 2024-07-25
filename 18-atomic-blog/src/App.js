@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -25,9 +25,11 @@ function App() {
         )
       : posts;
 
-  function handleAddPost(post) {
+  // useMemo는 value를 store하기에 값을 리턴하는데,
+  // useCallback은 함수를 파라미터로 전달ㅎ만 한다
+  const handleAddPost = useCallback(function handleAddPost(post) {
     setPosts((posts) => [post, ...posts]);
-  }
+  }, []);
 
   function handleClearPosts() {
     setPosts([]);
@@ -68,7 +70,14 @@ function App() {
         setSearchQuery={setSearchQuery}
       />
       <Main posts={searchedPosts} onAddPost={handleAddPost} />
-      <Archive archiveOptions={archiveOptions} />
+      <Archive
+        archiveOptions={archiveOptions}
+        onAddPost={handleAddPost}
+        setIsFakeDark={setIsFakeDark}
+        // useState setter함수는 render를 거쳐도 파괴되고 새롭게 만들어지지 않는다
+        // 그러므로 useCallback으로 감싸지 않아도 re-render가 되지 않는다.
+        // 이때문에 useCallback의 dependancy array에 setter가 들어가지 않아도 린터가 불평하지 않음
+      />
       <Footer />
     </section>
   );
@@ -166,7 +175,11 @@ function List({ posts }) {
 }
 
 // show prop이 바뀌지 않는 이상 리렌더링을 하지 않는다.
-const Archive = memo(function Archive({ archiveOptions }) {
+const Archive = memo(function Archive({
+  archiveOptions,
+  onAddPost,
+  setIsFakeDark,
+}) {
   // Here we don't need the setter function. We're only using state to store these posts because the callback function passed into useState (which generates the posts) is only called once, on the initial render. So we use this trick as an optimization technique, because if we just used a regular variable, these posts would be re-created on every render. We could also move the posts outside the components, but I wanted to show you this trick 😉
   const [posts] = useState(() =>
     // 💥 WARNING: This might make your computer slow! Try a smaller `length` first
@@ -190,7 +203,7 @@ const Archive = memo(function Archive({ archiveOptions }) {
               <p>
                 <strong>{post.title}:</strong> {post.body}
               </p>
-              {/* <button onClick={() => onAddPost(post)}>Add as new post</button> */}
+              <button onClick={() => onAddPost(post)}>Add as new post</button>
             </li>
           ))}
         </ul>
