@@ -1,5 +1,6 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { faker } from "@faker-js/faker";
+import { PostProvider, usePost } from "./PostContext";
 
 function createRandomPost() {
   return {
@@ -9,31 +10,7 @@ function createRandomPost() {
 }
 
 function App() {
-  const [posts, setPosts] = useState(() =>
-    Array.from({ length: 30 }, () => createRandomPost())
-  );
-  const [searchQuery, setSearchQuery] = useState("");
   const [isFakeDark, setIsFakeDark] = useState(false);
-
-  // Derived state. These are the posts that will actually be displayed
-  const searchedPosts =
-    searchQuery.length > 0
-      ? posts.filter((post) =>
-          `${post.title} ${post.body}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-        )
-      : posts;
-
-  // useMemo는 value를 store하기에 값을 리턴하는데,
-  // useCallback은 함수를 파라미터로 전달ㅎ만 한다
-  const handleAddPost = useCallback(function handleAddPost(post) {
-    setPosts((posts) => [post, ...posts]);
-  }, []);
-
-  function handleClearPosts() {
-    setPosts([]);
-  }
 
   // Whenever `isFakeDark` changes, we toggle the `fake-dark-mode` class on the HTML element (see in "Elements" dev tool).
   useEffect(
@@ -41,17 +18,6 @@ function App() {
       document.documentElement.classList.toggle("fake-dark-mode");
     },
     [isFakeDark]
-  );
-
-  const archiveOptions = useMemo(
-    () => ({
-      show: false,
-      title: `Post archive in addition to ${posts.length} main posts`,
-    }),
-    // useEffect처럼 dependancy array의 값이 변할때만 다시 recalculate
-    // 빈 array일때는 initial render에만 실행되어 값을 받아놓고 caching한다
-    [posts.length] // 만약 dependancy array에 값을 제대로 넣어주지 않는다면
-    // update된 값이 아니라 stale한 값을 계속 사용하게 된다.
   );
 
   return (
@@ -63,45 +29,35 @@ function App() {
         {isFakeDark ? "☀️" : "🌙"}
       </button>
 
-      <Header
-        posts={searchedPosts}
-        onClearPosts={handleClearPosts}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-      <Main posts={searchedPosts} onAddPost={handleAddPost} />
-      <Archive
-        archiveOptions={archiveOptions}
-        onAddPost={handleAddPost}
-        setIsFakeDark={setIsFakeDark}
-        // useState setter함수는 render를 거쳐도 파괴되고 새롭게 만들어지지 않는다
-        // 그러므로 useCallback으로 감싸지 않아도 re-render가 되지 않는다.
-        // 이때문에 useCallback의 dependancy array에 setter가 들어가지 않아도 린터가 불평하지 않음
-      />
-      <Footer />
+      <PostProvider>
+        <Header />
+        <Main />
+        <Archive />
+        <Footer />
+      </PostProvider>
     </section>
   );
 }
 
-function Header({ posts, onClearPosts, searchQuery, setSearchQuery }) {
+function Header() {
+  const { onClearPosts } = usePost();
+
   return (
     <header>
       <h1>
         <span>⚛️</span>The Atomic Blog
       </h1>
       <div>
-        <Results posts={posts} />
-        <SearchPosts
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-        />
+        <Results />
+        <SearchPosts />
         <button onClick={onClearPosts}>Clear posts</button>
       </div>
     </header>
   );
 }
 
-function SearchPosts({ searchQuery, setSearchQuery }) {
+function SearchPosts() {
+  const { searchQuery, setSearchQuery } = usePost();
   return (
     <input
       value={searchQuery}
@@ -111,28 +67,30 @@ function SearchPosts({ searchQuery, setSearchQuery }) {
   );
 }
 
-function Results({ posts }) {
+function Results() {
+  const { posts } = usePost();
   return <p>🚀 {posts.length} atomic posts found</p>;
 }
 
-function Main({ posts, onAddPost }) {
+function Main() {
   return (
     <main>
-      <FormAddPost onAddPost={onAddPost} />
-      <Posts posts={posts} />
+      <FormAddPost />
+      <Posts />
     </main>
   );
 }
 
-function Posts({ posts }) {
+function Posts() {
   return (
     <section>
-      <List posts={posts} />
+      <List />
     </section>
   );
 }
 
-function FormAddPost({ onAddPost }) {
+function FormAddPost() {
+  const { onAddPost } = usePost();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
@@ -161,37 +119,35 @@ function FormAddPost({ onAddPost }) {
   );
 }
 
-function List({ posts }) {
+function List() {
+  const { posts } = usePost();
   return (
-    <ul>
-      {posts.map((post, i) => (
-        <li key={i}>
-          <h3>{post.title}</h3>
-          <p>{post.body}</p>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul>
+        {posts.map((post, i) => (
+          <li key={i}>
+            <h3>{post.title}</h3>
+            <p>{post.body}</p>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
-// show prop이 바뀌지 않는 이상 리렌더링을 하지 않는다.
-const Archive = memo(function Archive({
-  archiveOptions,
-  onAddPost,
-  setIsFakeDark,
-}) {
+function Archive() {
+  const { onAddPost } = usePost();
   // Here we don't need the setter function. We're only using state to store these posts because the callback function passed into useState (which generates the posts) is only called once, on the initial render. So we use this trick as an optimization technique, because if we just used a regular variable, these posts would be re-created on every render. We could also move the posts outside the components, but I wanted to show you this trick 😉
   const [posts] = useState(() =>
     // 💥 WARNING: This might make your computer slow! Try a smaller `length` first
     Array.from({ length: 10000 }, () => createRandomPost())
   );
 
-  const { show, title } = archiveOptions;
-  const [showArchive, setShowArchive] = useState(show);
+  const [showArchive, setShowArchive] = useState(false);
 
   return (
     <aside>
-      <h2>{title}</h2>
+      <h2>Show archive</h2>
       <button onClick={() => setShowArchive((s) => !s)}>
         {showArchive ? "Hide archive posts" : "Show archive posts"}
       </button>
@@ -210,7 +166,7 @@ const Archive = memo(function Archive({
       )}
     </aside>
   );
-});
+}
 
 function Footer() {
   return <footer>&copy; by The Atomic Blog ✌️</footer>;

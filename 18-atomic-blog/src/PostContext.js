@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from "react";
+import { useState, createContext, useContext, useMemo } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -34,16 +34,28 @@ function PostProvider({ children }) {
     setPosts([]);
   }
 
+  // PostProvider 부모가 re-render되면
+  // 자식인 PostProvider도 re-render, 다시 말하면 value도 re-render(object니까)
+  // 따라서 context consumer들은 context가 변했기 때문에 re-render한 것으로 나온다.
+
+  // context에 의한 리렌더링을 막기위해 value object를 useMemo
+  // 여전히 부모가 re-render되어 re-render되기는 함
+
+  // 한 Provider에 모든 value를 몰빵하는것은 관련 없는 모든 consumer를 리렌더하기때문에 좋지 않다
+  const value = useMemo(
+    () => ({
+      posts: searchedPosts,
+      onAddPosts: handleAddPost,
+      onClearPosts: handleClearPosts,
+      searchQuery,
+      setSearchQuery,
+    }),
+    [searchedPosts, searchQuery]
+  );
   return (
-    <PostContext.Provider
-      value={{
-        posts: searchedPosts,
-        onAddPosts: handleAddPost,
-        onClearPosts: handleClearPosts,
-        searchQuery,
-        setSearchQuery,
-      }}
-    >
+    <PostContext.Provider value={value}>
+      {/* children으로 자식들을 받는 순간부터 자식들은 최적화된다
+      (Provider가 리렌더되기 전에 이미 렌더가 된 컴포넌트들이므로) */}
       {children}
     </PostContext.Provider>
   );
