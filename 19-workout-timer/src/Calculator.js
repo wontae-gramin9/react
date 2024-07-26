@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback } from "react";
+import { memo, useState, useEffect } from "react";
 import clickSound from "./ClickSound.m4a";
 
 function Calculator({ workouts, allowSound }) {
@@ -8,22 +8,22 @@ function Calculator({ workouts, allowSound }) {
   const [durationBreak, setDurationBreak] = useState(5);
   const [duration, setDuration] = useState(0);
 
-  // const playSound = useCallback(
-  //   function () {
-  //     if (!allowSound) return;
-  //     const sound = new Audio(clickSound);
-  //     sound.play();
-  //   },
-  //   [allowSound]
-  // );
-  // 근데 이렇게하면, allowSound가 바뀔 때마다 useEffect가 실행되고
-  // 아무리 inc/dec버튼으로 duration을 바꿔도 form에서의 state는 바뀌지 않았으니
-  // 초기화되는 문제가 생김
-  // ↓
-  // 또 하나의 useEffect로  playSound를 duration과 sync하면 됨
-  // 이러면 duration이 바뀔때마다 playSound가 실행되니 다른 eventHandler에서 playSound()를
-  // 삭제할수 있고, one useEffect per sideEffect라는 말의 의미를 이해할 수 있게 됨
-  // 예기치 못한 버그도 해결가능함
+  useEffect(() => {
+    document.title = `Your ${number}-exercise workout`;
+    // Js stale closure
+    // Clousure: 함수가 선언되었던 lexical env의 변수, 메소드들을 기억하는 것
+    // 그렇기 때문에 상위 함수의 변수도 참조할 수 있게 됨
+    // Js closure가 useEffect에 어떻게 영향을 미치는가?
+
+    console.log(duration, sets);
+    // useEffect의 callback이 생성될때, 그때의 snapshot의 state(컴포넌트의 모든 state)를 접근할 수 있다
+    // 만약 디펜던시어레이에 특정 state가 들어있지 않아있는데
+    // console.log()등에서 필요로 한다면
+    // 그 state값은 initialRender때의 값을 가집니다
+    // (한번밖에 실행 안되는데, 그때의 lexical env의 변수를 기억한다)
+    // 이를 stale closure라고 합니다.
+  }, [number]);
+
   useEffect(() => {
     const playSound = function () {
       if (!allowSound) return;
