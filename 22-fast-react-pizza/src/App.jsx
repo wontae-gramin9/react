@@ -5,11 +5,13 @@ import Cart from "./features/cart/Cart";
 import Order from "./features/order/Order";
 import CreateOrder from "./features/order/CreateOrder";
 import AppLayout from "./ui/AppLayout";
+import Error from "./ui/Error";
 
 // react router 6.4: load data, submit data using form
 const router = createBrowserRouter([
   {
     element: <AppLayout />,
+
     // layout route
     // (nested route에도 children prop을 사용할 수 있다.)
     // 여기서는 AppLayout은 자신만의 route를 가지지 않지만
@@ -27,6 +29,8 @@ const router = createBrowserRouter([
         // 해당 router에 접근해서 render할때 동시에(parallel) 필요한 data를 받으면서 들어가는 법
         // useEffect는 최초렌더 한번 하고 sideEffect로 받은 이후 다시 한번 렌더를 하는
         // 'data loading waterfalls'가 발생하지만, 여기서는 아니다.
+        errorElement: <Error />,
+        // Error도, 해당 route에서 handle이 안되면 위로 bubble up한다
       },
       {
         path: "/cart",
