@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./ui/Home";
-import Menu from "./features/menu/Menu";
+import Menu, { loader as menuLoader } from "./features/menu/Menu";
 import Cart from "./features/cart/Cart";
 import Order from "./features/order/Order";
 import CreateOrder from "./features/order/CreateOrder";
@@ -23,6 +23,10 @@ const router = createBrowserRouter([
       {
         path: "/menu",
         element: <Menu />,
+        loader: menuLoader,
+        // 해당 router에 접근해서 render할때 동시에(parallel) 필요한 data를 받으면서 들어가는 법
+        // useEffect는 최초렌더 한번 하고 sideEffect로 받은 이후 다시 한번 렌더를 하는
+        // 'data loading waterfalls'가 발생하지만, 여기서는 아니다.
       },
       {
         path: "/cart",
