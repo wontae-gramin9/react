@@ -1,36 +1,41 @@
-const initialStateCustomer = {
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
   fullName: "",
   nationalID: "",
   createdAt: "",
 };
 
-export default function customerReducer(state = initialStateCustomer, action) {
-  switch (action.type) {
-    case "customer/createCustomer":
-      return {
-        ...state,
-        fullName: action.payload.fullName,
-        nationalID: action.payload.nationalID,
-        createdAt: action.payload.createdAt,
-      };
-    case "customer/updateCustomer":
-      return { ...state, fullName: action.payload };
-    default:
-      return state;
-  }
-}
+const customerSlice = createSlice({
+  name: "customer",
+  initialState,
+  reducers: {
+    createCustomer: {
+      prepare(fullName, nationalID) {
+        return {
+          payload: {
+            fullName,
+            nationalID,
+            // sideEffect이므로 reducer에서 하지 않고 prepare에서 한다
+            // 즉 arg가 하나더라도, 자동생성ID나 createdAt같은 sideEffect가 있으면
+            // prepare에서 하는게 맞다
+            createdAt: new Date().toISOString(),
+          },
+        };
+      },
+      reducer(state, action) {
+        if (state.loan > 0) return;
+        state.fullName = action.payload.fullName;
+        state.nationalID = action.payload.nationalID;
+        state.createdAt = action.payload.createdAt;
+      },
+    },
+    updateCustomer(state, action) {
+      state.fullName = action.payload;
+    },
+  },
+});
 
-export function createCustomer(fullName, nationalID) {
-  return {
-    type: "customer/createCustomer",
-    // new Date는 pure한 인풋이 아니기 때문에 reducer에 들어가지 않고, action에 들어갑니다.
-    payload: { fullName, nationalID, createdAt: new Date().toISOString() },
-  };
-}
+export const { createCustomer, updateCustomer } = customerSlice.actions;
 
-export function updateCustomer(fullName) {
-  return {
-    type: "customer/updateCustomer",
-    payload: fullName,
-  };
-}
+export default customerSlice.reducer;
