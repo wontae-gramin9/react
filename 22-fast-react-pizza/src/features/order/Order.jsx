@@ -5,6 +5,8 @@ import {
   formatCurrency,
   formatDate,
 } from "../../utils/helpers";
+import { getOrder } from "../../services/apiRestaurant";
+import { useLoaderData } from "react-router-dom";
 
 const order = {
   id: "ABCDEF",
@@ -41,7 +43,18 @@ const order = {
   priorityPrice: 19,
 };
 
+export async function loader({ params }) {
+  // id를 url param에서 가져와야하는데, 이때까지 썼던 건 useParams 'hook'이다
+  // 즉 컴포넌트에서만 쓸 수 있고, 일반 함수에서는 쓰지 못한다는 것
+  // loader function은 args로 params를 받는다
+  const { orderId } = params; // dynamic router와 일치해야함 /order/:orderId
+  const order = await getOrder(orderId);
+  return order;
+}
+
 function Order() {
+  const order = useLoaderData();
+
   // Everyone can search for all orders, so for privacy reasons we're gonna gonna exclude names or address, these are only for the restaurant staff
   const {
     id,
