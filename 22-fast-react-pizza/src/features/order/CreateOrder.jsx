@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Form, redirect, useNavigation } from "react-router-dom";
+import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
 import { createOrder } from "../../services/apiRestaurant";
 
 // https://uibakery.io/regex-library/phone-number
@@ -47,7 +47,13 @@ export async function action({ request }) {
     priority: data.priority === "on",
   };
 
+  const errors = {};
+  if (!isValidPhone(order.phone)) errors.phone = "폰넘버잘못됨";
+  // Obj가 비어있는지 아닌지 확인할 수 있는 방법
+  if (Object.keys(errors).length > 0) return errors;
+
   const newOrder = await createOrder(order);
+
   // 컴포넌트가 아니라 useNavigate Hook 사용불가
   return redirect(`/order/${newOrder.id}`);
 }
@@ -55,6 +61,9 @@ export async function action({ request }) {
 function CreateOrder() {
   const naviagtion = useNavigation();
   const isSubmitting = naviagtion.state === "submitting";
+
+  const formErrors = useActionData();
+
   // const [withPriority, setWithPriority] = useState(false);
   const cart = fakeCart;
 
@@ -76,6 +85,7 @@ function CreateOrder() {
           <div>
             <input type="tel" name="phone" required />
           </div>
+          {formErrors?.phone && <p>{formErrors.phone}</p>}
         </div>
         <div>
           <label>Address</label>
