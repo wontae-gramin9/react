@@ -1,9 +1,11 @@
 import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
 import { createOrder } from "../../services/apiRestaurant";
 import { useSelector } from "react-redux";
-import { clearCart, getCart } from "../cart/cartSlice";
+import { clearCart, getCart, getTotalCartPrice } from "../cart/cartSlice";
 import EmptyCart from "../cart/EmptyCart";
 import store from "../../store";
+import { formatCurrency } from "../../utils/helpers";
+import { useState } from "react";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -23,7 +25,7 @@ export async function action({ request }) {
   const order = {
     ...data,
     cart: JSON.parse(data.cart),
-    priority: data.priority === "on",
+    priority: data.priority === "true", // input에서 들어온 거니까, boolean이라도 string으로
   };
 
   const errors = {};
@@ -44,10 +46,11 @@ function CreateOrder() {
   const isSubmitting = naviagtion.state === "submitting";
   const username = useSelector((state) => state.user.username);
   const cart = useSelector(getCart);
-
+  const [withPriority, setWithPriority] = useState(false);
+  const totalCartPrice = useSelector(getTotalCartPrice);
+  const priorityPrice = withPriority ? totalCartPrice * 0.2 : 0;
+  const totalPrice = totalCartPrice + priorityPrice;
   const formErrors = useActionData();
-
-  // const [withPriority, setWithPriority] = useState(false);
 
   if (!cart.length) return <EmptyCart />;
 
@@ -82,8 +85,8 @@ function CreateOrder() {
             type="checkbox"
             name="priority"
             id="priority"
-            // value={withPriority}
-            // onChange={(e) => setWithPriority(e.target.checked)}
+            value={withPriority}
+            onChange={(e) => setWithPriority(e.target.checked)}
           />
           <label htmlFor="priority">Want to yo give your order priority?</label>
         </div>
@@ -92,7 +95,9 @@ function CreateOrder() {
           POST이므로 serializing */}
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
           <button disabled={isSubmitting}>
-            {isSubmitting ? "Placing order..." : "Order now"}
+            {isSubmitting
+              ? "Placing order..."
+              : `Order now from ${formatCurrency(totalPrice)}`}
           </button>
         </div>
       </Form>
