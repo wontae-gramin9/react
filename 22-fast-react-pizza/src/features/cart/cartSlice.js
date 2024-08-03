@@ -27,6 +27,9 @@ const cartSlice = createSlice({
       const item = state.cart.find((item) => item.pizzaId === action.payload);
       item.quantity -= 1;
       item.totalPrice = item.quantity * item.unitPrice;
+
+      // action creator 내부에서 또다른 action creator를 사용하는 방법
+      if (item.quantity === 0) cartSlice.caseReducers.deleteItem(state, action);
     },
     clearCart(state, action) {
       state.cart = [];
