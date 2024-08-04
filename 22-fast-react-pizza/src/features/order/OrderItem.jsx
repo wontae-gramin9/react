@@ -1,3 +1,5 @@
+import { formatCurrency } from "./../../utils/helpers";
+
 function OrderItem({ item, isLoadingIngredients, ingredients }) {
   const { quantity, name, totalPrice } = item;
 
@@ -9,6 +11,7 @@ function OrderItem({ item, isLoadingIngredients, ingredients }) {
         </p>
         <p>{formatCurrency(totalPrice)}</p>
       </div>
+      <p>{isLoadingIngredients ? "Loading" : ingredients.join(", ")}</p>
     </li>
   );
 }

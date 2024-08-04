@@ -6,42 +6,9 @@ import {
   formatDate,
 } from "../../utils/helpers";
 import { getOrder } from "../../services/apiRestaurant";
-import { useLoaderData } from "react-router-dom";
-
-const order = {
-  id: "ABCDEF",
-  customer: "Jonas",
-  phone: "123456789",
-  address: "Arroios, Lisbon , Portugal",
-  priority: true,
-  estimatedDelivery: "2027-04-25T10:00:00",
-  cart: [
-    {
-      pizzaId: 7,
-      name: "Napoli",
-      quantity: 3,
-      unitPrice: 16,
-      totalPrice: 48,
-    },
-    {
-      pizzaId: 5,
-      name: "Diavola",
-      quantity: 2,
-      unitPrice: 16,
-      totalPrice: 32,
-    },
-    {
-      pizzaId: 3,
-      name: "Romana",
-      quantity: 1,
-      unitPrice: 15,
-      totalPrice: 15,
-    },
-  ],
-  position: "-9.000,38.000",
-  orderPrice: 95,
-  priorityPrice: 19,
-};
+import { useFetcher, useLoaderData } from "react-router-dom";
+import { useEffect } from "react";
+import OrderItem from "./OrderItem";
 
 export async function loader({ params }) {
   // id를 url param에서 가져와야하는데, 이때까지 썼던 건 useParams 'hook'이다
@@ -53,6 +20,16 @@ export async function loader({ params }) {
 }
 
 function Order() {
+  // 메뉴 data를 다시 가져오고싶다고 해보자.
+  // menu 라우터에 loader랑 다 연결해 놓았다.
+  // 여기는 order라우터인데, 라우터가 다르다고해서 그걸 다시 만드는건 말이 안된다.
+  // 다른 라우터에서 쓸 수 있는 방법은 뭐가 있을까?
+  const fetcher = useFetcher();
+  useEffect(() => {
+    if (!fetcher.data && fetcher.state === "idle") fetcher.load("/menu");
+    // 'idle', 'loading' state를 가진다
+  }, [fetcher]);
+
   const order = useLoaderData();
 
   // Everyone can search for all orders, so for privacy reasons we're gonna gonna exclude names or address, these are only for the restaurant staff
@@ -86,6 +63,20 @@ function Order() {
         </p>
         <p>(Estimated delivery: {formatDate(estimatedDelivery)})</p>
       </div>
+
+      <ul>
+        {cart.map((pizza) => (
+          <OrderItem
+            item={pizza}
+            key={pizza.pizzaId}
+            isLoadingIngredients={fetcher.state === "loading"}
+            ingredients={
+              fetcher?.data?.find((menu) => menu.id === pizza.pizzaId)
+                .ingredients ?? []
+            }
+          ></OrderItem>
+        ))}
+      </ul>
 
       <div>
         <p>Price pizza: {formatCurrency(orderPrice)}</p>
