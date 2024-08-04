@@ -9,6 +9,7 @@ import { getOrder } from "../../services/apiRestaurant";
 import { useFetcher, useLoaderData } from "react-router-dom";
 import { useEffect } from "react";
 import OrderItem from "./OrderItem";
+import UpdateOrder from "./UpdateOrder";
 
 export async function loader({ params }) {
   // id를 url param에서 가져와야하는데, 이때까지 썼던 건 useParams 'hook'이다
@@ -34,7 +35,6 @@ function Order() {
 
   // Everyone can search for all orders, so for privacy reasons we're gonna gonna exclude names or address, these are only for the restaurant staff
   const {
-    id,
     status,
     priority,
     priorityPrice,
@@ -82,6 +82,7 @@ function Order() {
         <p>Price pizza: {formatCurrency(orderPrice)}</p>
         {priority && <p>Price priority: {formatCurrency(priorityPrice)}</p>}
         <p>To pay on delivery: {formatCurrency(orderPrice + priorityPrice)}</p>
+        {!priority && <UpdateOrder order={order} />}
       </div>
     </div>
   );
