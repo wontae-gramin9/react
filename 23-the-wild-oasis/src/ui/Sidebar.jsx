@@ -9,6 +9,9 @@ const StyledSidebar = styled.aside`
 
   grid-row: 1 / -1;
   /* 마지막까지 주욱! */
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
 `;
 
 function Sidebar() {
