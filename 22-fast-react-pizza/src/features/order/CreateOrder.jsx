@@ -1,11 +1,12 @@
 import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
 import { createOrder } from "../../services/apiRestaurant";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { clearCart, getCart, getTotalCartPrice } from "../cart/cartSlice";
 import EmptyCart from "../cart/EmptyCart";
 import store from "../../store";
 import { formatCurrency } from "../../utils/helpers";
 import { useState } from "react";
+import { fetchAddress } from "../user/userSlice";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -44,19 +45,28 @@ export async function action({ request }) {
 function CreateOrder() {
   const naviagtion = useNavigation();
   const isSubmitting = naviagtion.state === "submitting";
-  const username = useSelector((state) => state.user.username);
+  const {
+    username,
+    status: addressStatus,
+    position,
+    address,
+    error: errorAddress,
+  } = useSelector((state) => state.user);
+  const isLoadingAddress = addressStatus === "loading";
   const cart = useSelector(getCart);
   const [withPriority, setWithPriority] = useState(false);
   const totalCartPrice = useSelector(getTotalCartPrice);
   const priorityPrice = withPriority ? totalCartPrice * 0.2 : 0;
   const totalPrice = totalCartPrice + priorityPrice;
   const formErrors = useActionData();
+  const dispatch = useDispatch();
 
   if (!cart.length) return <EmptyCart />;
 
   return (
     <div>
       <h2>Ready to order? Let's go!</h2>
+
       {/* <Form method="POST" action="/order/new"> */}
       {/* Specifying the action
       해당 form이 submit하는 path를 적는 것, 그러나 기본적으로 react router가 매치하기때문에
@@ -77,8 +87,25 @@ function CreateOrder() {
         <div>
           <label>Address</label>
           <div>
-            <input type="text" name="address" required />
+            <input
+              type="text"
+              name="address"
+              required
+              defaultValue={address}
+              disabled={isLoadingAddress}
+            />
+            {addressStatus === "error" && <p>{errorAddress}</p>}
           </div>
+          {!position.latitude && !position.longitute && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                dispatch(fetchAddress());
+              }}
+            >
+              Get position
+            </button>
+          )}
         </div>
         <div>
           <input
@@ -94,7 +121,16 @@ function CreateOrder() {
           {/* HIDDEN INPUT으로 cart정보 Form에 밀어넣기
           POST이므로 serializing */}
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
-          <button disabled={isSubmitting}>
+          <input
+            type="hidden"
+            name="position"
+            value={
+              position.latitude && position.longitude
+                ? `${position.latitude},${position.longitude}`
+                : ""
+            }
+          />
+          <button disabled={isSubmitting || isLoadingAddress}>
             {isSubmitting
               ? "Placing order..."
               : `Order now from ${formatCurrency(totalPrice)}`}
