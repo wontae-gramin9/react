@@ -18,7 +18,7 @@ function CreateCabinForm() {
     // as soon as mutation done, revalidate cache on Query Client
     // how to access to Query Client? → useQueryClient
     onSuccess: () => {
-      toast.sucesss("Cabin successfully deleted");
+      toast.success("Cabin successfully uploaded");
       queryClient.invalidateQueries({
         queryKey: ["cabins"],
       });
@@ -29,8 +29,7 @@ function CreateCabinForm() {
   const { errors } = formState;
 
   function onSubmit(data) {
-    // mutate(data);
-    console.log(data);
+    mutate({ ...data, image: data.image[0] });
   }
 
   return (
@@ -92,7 +91,7 @@ function CreateCabinForm() {
       </FormRow>
 
       <FormRow
-        label="Description for website"
+        label="Description for cabin"
         error={errors?.description?.message}
       >
         <Textarea
@@ -107,7 +106,13 @@ function CreateCabinForm() {
       </FormRow>
 
       <FormRow label="Cabin photo">
-        <FileInput id="image" accept="image/*" />
+        <FileInput
+          id="image"
+          accept="image/*"
+          {...register("image", {
+            required: "This field is required",
+          })}
+        />
       </FormRow>
 
       <FormRow>
