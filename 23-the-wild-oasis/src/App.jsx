@@ -12,6 +12,7 @@ import Account from "./pages/Account";
 import Login from "./pages/Login";
 import PageNotFound from "./pages/PageNotFound";
 import AppLayout from "./ui/AppLayout";
+import { Toaster } from "react-hot-toast";
 
 // context API와 redux와 비슷하게 data가 살고있는 Client를 만든다
 const queryClient = new QueryClient({
@@ -26,6 +27,26 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools />
+      <Toaster
+        position="top-center"
+        gutter={12}
+        containerStyle={{ margin: "8px" }}
+        toastOptions={{
+          success: {
+            duration: 3000,
+          },
+          error: {
+            duration: 5000,
+          },
+          style: {
+            fontSize: "16px",
+            maxWidth: "500px",
+            padding: "16px 24px",
+            color: "var(--color-grey-700)",
+            backgroundColor: "var(--color-grey-0)",
+          },
+        }}
+      />
       <BrowserRouter>
         <Routes>
           <Route element={<AppLayout />}>
