@@ -9,19 +9,29 @@ export async function getCabins() {
   return data;
 }
 
-export async function createCabin(newCabin) {
+export async function createEditCabin(newCabin, id) {
   // https://kavvwqrrjwpiuwwrghit.supabase.co/storage/v1/object/public/cabin-images/cabin-001.jpg
+  const hasImagePath = newCabin.image?.startsWith?.(supabaseUrl);
 
   const imageName = `${Math.random()}-${newCabin.image.name}`.replaceAll(
     "/",
     ""
   );
-  const imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
-  // 1. CREATE CABIN
-  const { data, error } = await supabase
-    .from("cabins")
-    .insert([{ ...newCabin, image: imagePath }])
-    .select();
+  const imagePath = hasImagePath
+    ? newCabin.image
+    : `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
+
+  let cabinQuery = supabase.from("cabins");
+
+  // CREATE CABIN
+  if (!id) cabinQuery = cabinQuery.insert([{ ...newCabin, image: imagePath }]);
+  // UPDATE CABIN
+  else
+    cabinQuery = cabinQuery
+      .update({ ...newCabin, image: imagePath })
+      .eq("id", id);
+
+  const { data, error } = await cabinQuery.select().single(); // [newRow]를 newRow로 array에서 꺼내는 것
 
   if (error) {
     console.error(error);
