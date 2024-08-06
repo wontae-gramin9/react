@@ -5,9 +5,8 @@ import FileInput from "../../ui/FileInput";
 import FormRow from "../../ui/FormRow";
 import Textarea from "../../ui/Textarea";
 import { useForm } from "react-hook-form";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { createEditCabin } from "../../services/apiCabins";
-import { toast } from "react-hot-toast";
+import { useCreateCabin } from "./useCreateCabin";
+import { useEditCabin } from "./useEditCabin";
 
 function CreateCabinForm({ cabinToEdit = {} }) {
   const { id: editId, ...editValues } = cabinToEdit;
@@ -17,43 +16,34 @@ function CreateCabinForm({ cabinToEdit = {} }) {
     // defaultValues는 edit이 아니라 새로운걸 만들때라면 필요없다
     defaultValues: isEditSession ? editValues : {},
   });
-  const queryClient = useQueryClient();
   const { errors } = formState;
 
-  const { isLoading: isCreating, mutate: createCabin } = useMutation({
-    mutationFn: createEditCabin,
-    // as soon as mutation done, revalidate cache on Query Client
-    // how to access to Query Client? → useQueryClient
-    onSuccess: () => {
-      toast.success("Cabin successfully uploaded");
-      queryClient.invalidateQueries({
-        queryKey: ["cabins"],
-      });
-      reset();
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const { isLoading: isEditing, mutate: editCabin } = useMutation({
-    mutationFn: ({ newCabin, id }) => createEditCabin(newCabin, id),
-    // mutationFn은 arg를 하나만 허용한다. 그러므로 여러 값을 넣으려면
-    // obj 하나에 destructuring으로
-    onSuccess: () => {
-      toast.success("Cabin successfully edited");
-      queryClient.invalidateQueries({
-        queryKey: ["cabins"],
-      });
-      reset();
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const { isCreating, createCabin } = useCreateCabin();
+  const { isEditing, editCabin } = useEditCabin();
 
   const isWorking = isCreating | isEditing;
 
   function onSubmit(data) {
     const image = typeof data.image === "string" ? data.image : data.image[0];
-    if (isEditSession) editCabin({ newCabin: { ...data, image }, id: editId });
-    else createCabin({ ...data, image: data.image[0] });
+    if (isEditSession)
+      editCabin(
+        { newCabin: { ...data, image }, id: editId },
+        {
+          // onSuccess를 리턴되는 mutation에도 직접 달 수 있다.
+          onSuccess: (data) => {
+            reset();
+          },
+        }
+      );
+    else
+      createCabin(
+        { ...data, image: data.image[0] },
+        {
+          onSuccess: (data) => {
+            reset();
+          },
+        }
+      );
   }
 
   return (
