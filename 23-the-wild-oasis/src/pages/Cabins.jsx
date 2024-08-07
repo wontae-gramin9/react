@@ -1,12 +1,12 @@
-import { useState } from "react";
 import CabinTable from "../features/cabins/CabinTable";
 import Heading from "../ui/Heading";
 import Row from "../ui/Row";
-import Button from "../ui/Button";
-import CreateCabinForm from "../features/cabins/CreateCabinForm";
+import AddCabin from "../features/cabins/AddCabin";
 
 function Cabins() {
-  const [showForm, setShowForm] = useState(false);
+  // Pages 컴포넌트는 어떤 state도 없이 깔끔하길 원하기에
+  // 열고닫는거 외부로 뺍니다.
+  // const [showForm, setShowForm] = useState(false);
 
   return (
     <>
@@ -16,10 +16,7 @@ function Cabins() {
       </Row>
       <Row>
         <CabinTable />
-        <Button onClick={() => setShowForm((show) => !show)}>
-          Add new cabin
-        </Button>
-        {showForm && <CreateCabinForm />}
+        <AddCabin />
       </Row>
     </>
   );
