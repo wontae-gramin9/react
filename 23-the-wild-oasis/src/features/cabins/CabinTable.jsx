@@ -4,10 +4,13 @@ import Menus from "../../ui/Menus";
 import CabinRow from "./CabinRow";
 import { useCabins } from "./useCabins";
 import { useSearchParams } from "react-router-dom";
+import Empty from "../../ui/Empty";
 
 export default function CabinTable() {
   const { isLoading, cabins } = useCabins();
   const [searchParams] = useSearchParams();
+  if (isLoading) return <Spinner />;
+  if (!cabins.length) return <Empty resourceName="cabins" />;
   // 삼항연산자 안 써도 앞이 null value면 바로 뒤값을 보여주는 short circuiting
   const filterValue = searchParams.get("discount") || "all";
   let filteredCabins;
@@ -25,14 +28,13 @@ export default function CabinTable() {
       break;
   }
 
-  const sortBy = searchParams.get("sortBy") || "startDate-asc";
+  const sortBy = searchParams.get("sortBy") || "name-asc";
   const [field, direction] = sortBy.split("-");
-  const modifer = direction === "asc" ? 1 : -1;
+  const modifier = direction === "asc" ? 1 : -1;
   const sortedCabins = filteredCabins.sort(
-    (a, b) => modifer * (a[field] - b[field])
+    (a, b) => (a[field] - b[field]) * modifier
   );
 
-  if (isLoading) return <Spinner />;
   return (
     <Menus>
       <Table columns={"0.6fr 1.8fr 2.2fr 1fr 1fr 1fr"}>
