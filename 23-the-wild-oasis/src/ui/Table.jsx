@@ -1,3 +1,5 @@
+import { useContext } from "react";
+import { createContext } from "react";
 import styled from "styled-components";
 
 const StyledTable = styled.div`
@@ -58,3 +60,40 @@ const Empty = styled.p`
   text-align: center;
   margin: 2.4rem;
 `;
+
+const TableContext = createContext();
+
+export default function Table({ columns, children }) {
+  return (
+    <TableContext.Provider value={{ columns }}>
+      <StyledTable role="table">{children}</StyledTable>
+    </TableContext.Provider>
+  );
+}
+
+function Header({ children }) {
+  const { columns } = useContext(TableContext);
+  return (
+    <StyledHeader role="row" as="header" columns={columns}>
+      {children}
+    </StyledHeader>
+  );
+}
+function Row({ children }) {
+  const { columns } = useContext(TableContext);
+  return (
+    <StyledRow role="row" columns={columns}>
+      {children}
+    </StyledRow>
+  );
+}
+function Body({ data, render }) {
+  if (!data.length) return <Empty>No data to show at the moment</Empty>;
+  return <StyledBody row="row">{data.map(render)}</StyledBody>;
+}
+
+Table.Header = Header;
+Table.Row = Row;
+Table.Body = Body;
+// Footer에는 어떤 로직도 필요하지 않기때문에 따로 child컴포넌트를 만들지 않고 styled component를 바로 사용
+Table.Footer = Footer;

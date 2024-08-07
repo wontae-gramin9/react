@@ -1,16 +1,8 @@
 import styled from "styled-components";
 import Spinner from "../../ui/Spinner";
+import Table from "../../ui/Table";
 import CabinRow from "./CabinRow";
 import { useCabins } from "./useCabins";
-
-const Table = styled.div`
-  border: 1px solid var(--color-grey-200);
-
-  font-size: 1.4rem;
-  background-color: var(--color-grey-0);
-  border-radius: 7px;
-  overflow: hidden;
-`;
 
 const TableHeader = styled.header`
   display: grid;
@@ -27,6 +19,15 @@ const TableHeader = styled.header`
   padding: 1.6rem 2.4rem;
 `;
 
+// const Table = styled.div`
+//   border: 1px solid var(--color-grey-200);
+
+//   font-size: 1.4rem;
+//   background-color: var(--color-grey-0);
+//   border-radius: 7px;
+//   overflow: hidden;
+// `;
+
 export default function CabinTable() {
   const { isLoading, cabins } = useCabins();
 
@@ -34,18 +35,19 @@ export default function CabinTable() {
   return (
     // as는 tag를 아예 바꿔버리지만 role은 바꾸지는 않고, comment의 느낌으로
     // semantic을 보강한다
-    <Table role="table">
-      <TableHeader role="row">
+    <Table columns={"0.6fr 1.8fr 2.2fr 1fr 1fr 1fr"}>
+      <Table.Header role="row">
         <div></div>
         <div>Cabin</div>
         <div>Capacity</div>
         <div>Price</div>
         <div>Discount</div>
         <div></div>
-      </TableHeader>
-      {cabins.map((cabin) => (
-        <CabinRow key={cabin.id} cabin={cabin}></CabinRow>
-      ))}
+      </Table.Header>
+      <Table.Body
+        data={cabins}
+        render={(cabin) => <CabinRow key={cabin.id} cabin={cabin}></CabinRow>}
+      />
     </Table>
   );
 }
