@@ -59,7 +59,6 @@ export default function Modal({ children }) {
   const [openName, setOpenName] = useState("");
   const open = (openName) => setOpenName(openName);
   const close = () => setOpenName("");
-
   return (
     <ModalContext.Provider
       value={{
@@ -91,6 +90,8 @@ export function Window({ children, name }) {
         <Button onClick={close}>
           <HiXMark />
         </Button>
+        {/* cloneElement으로 오는 컴포넌트들은 모두 onCloseModal를 prop에 넣어주고,
+        눌려졌을 때 close가 실행되기를 원하는 버튼에 onClick={onCloseModal}을 달아주면 된다. */}
         {cloneElement(children, { onCloseModal: close })}
       </StyledModal>
       ;
