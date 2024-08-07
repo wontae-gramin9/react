@@ -16,7 +16,7 @@ const FilterButton = styled.button`
   border: none;
 
   ${(props) =>
-    props.active &&
+    props.$active &&
     css`
       background-color: var(--color-brand-600);
       color: var(--color-brand-50);
@@ -35,23 +35,26 @@ const FilterButton = styled.button`
   }
 `;
 
-export default function Filter() {
+export default function Filter({ filterField, options }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const currentFilter = searchParams.get(filterField) || options.at(0).value;
   function handleClick(value) {
-    searchParams.set("discount", value);
+    searchParams.set(filterField, value);
     // 실제로 url querystring에 들어가려면 setSearchParams(searchParams)해줘야 함
     setSearchParams(searchParams);
   }
-
   return (
     <StyledFilter>
-      <FilterButton onClick={() => handleClick("all")}>All</FilterButton>
-      <FilterButton onClick={() => handleClick("no-discount")}>
-        No Discount
-      </FilterButton>
-      <FilterButton onClick={() => handleClick("with-discount")}>
-        With Discount
-      </FilterButton>
+      {options.map(({ value, label }) => (
+        <FilterButton
+          key={value}
+          onClick={() => handleClick(value)}
+          $active={currentFilter === value}
+          disabled={currentFilter === value}
+        >
+          {label}
+        </FilterButton>
+      ))}
     </StyledFilter>
   );
 }
