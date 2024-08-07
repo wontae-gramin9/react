@@ -1,6 +1,9 @@
 import { HiXMark } from "react-icons/hi2";
 import styled from "styled-components";
 import { createPortal } from "react-dom";
+import { useState, createContext } from "react";
+import { useContext } from "react";
+import { cloneElement } from "react";
 
 const StyledModal = styled.div`
   position: fixed;
@@ -50,28 +53,51 @@ const Button = styled.button`
     color: var(--color-grey-500);
   }
 `;
-// REACT PORTAL
-// 컴포넌트의 현재 트리의 위치(부모 컴포넌트의 아래)에 여전히 놓지만
-// React devtools에서 보면 변하지 않는다.
-// 어디서든 렌더될 수 있게 만드는 것(어느 html tag)
-// Modal, Tooltip, Menu나 Overlay만들 때 자주 쓰인다
-// 왜 쓰는가? css의 conflict를 막기 위해서
-// 만약 쓰이는 곳의 컴포넌트가(부모 컴포넌트)가 overflow:hidden css를 가지고 있다면
-// Modal이 안 나오는 경우가 생기기 때문이다
-export default function Modal({ children, onClose }) {
-  // React Dom의 native api
+
+const ModalContext = createContext();
+
+export default function Modal({ children }) {
+  const [openName, setOpenName] = useState("");
+  const open = (openName) => setOpenName(openName);
+  const close = () => setOpenName("");
+
+  return (
+    <ModalContext.Provider
+      value={{
+        openName,
+        open,
+        close,
+      }}
+    >
+      {children}
+    </ModalContext.Provider>
+  );
+}
+
+export function Open({ children, openWindowName }) {
+  const { open } = useContext(ModalContext);
+  // Button이 children으로 들어올텐데, 어떻게 open event handler를 달아주지?
+  // https://react.dev/reference/react/cloneElement
+  return cloneElement(children, { onClick: () => open(openWindowName) });
+}
+
+export function Window({ children, name }) {
+  const { openName, close } = useContext(ModalContext);
+  if (name !== openName) return null;
+
   return createPortal(
     <Overlay>
       <StyledModal>
-        <Button onClick={onClose}>
+        <Button onClick={close}>
           <HiXMark />
-          {/* Modal component내부에서 모달을 닫으려면
-          부모의 setIsModalopen에 접근해야한다 → state올리기 */}
         </Button>
-        {children}
+        {cloneElement(children, { onCloseModal: close })}
       </StyledModal>
       ;
     </Overlay>,
     document.body // 렌더하고 싶은 위치. body(최상단)의 1번째 child
   );
 }
+
+Modal.Open = Open;
+Modal.Window = Window;
