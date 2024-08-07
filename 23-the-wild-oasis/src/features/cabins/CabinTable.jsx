@@ -4,6 +4,7 @@ import Table from "../../ui/Table";
 import Menus from "../../ui/Menus";
 import CabinRow from "./CabinRow";
 import { useCabins } from "./useCabins";
+import { useSearchParams } from "react-router-dom";
 
 const TableHeader = styled.header`
   display: grid;
@@ -31,6 +32,23 @@ const TableHeader = styled.header`
 
 export default function CabinTable() {
   const { isLoading, cabins } = useCabins();
+  const [searchParams] = useSearchParams();
+  // 삼항연산자 안 써도 앞이 null value면 바로 뒤값을 보여주는 short circuiting
+  const filterValue = searchParams.get("discount") || "all";
+  let filteredCabins;
+  switch (filterValue) {
+    case "all":
+      filteredCabins = cabins;
+      break;
+    case "no-discount":
+      filteredCabins = cabins.filter((cabin) => cabin.discount === 0);
+      break;
+    case "with-discount":
+      filteredCabins = cabins.filter((cabin) => cabin.discount > 0);
+      break;
+    default:
+      break;
+  }
 
   if (isLoading) return <Spinner />;
   return (
@@ -47,7 +65,7 @@ export default function CabinTable() {
           <div></div>
         </Table.Header>
         <Table.Body
-          data={cabins}
+          data={filteredCabins}
           render={(cabin) => <CabinRow key={cabin.id} cabin={cabin}></CabinRow>}
         />
       </Table>
