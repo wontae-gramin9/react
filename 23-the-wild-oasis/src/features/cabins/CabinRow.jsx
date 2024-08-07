@@ -7,6 +7,7 @@ import { HiPencil, HiSquare2Stack, HiTrash } from "react-icons/hi2";
 import { useCreateCabin } from "./useCreateCabin";
 import Modal from "../../ui/Modal";
 import Table from "../../ui/Table";
+import Menus from "../../ui/Menus";
 import ConfirmDelete from "./../../ui/ConfirmDelete";
 
 const Img = styled.img`
@@ -95,6 +96,17 @@ export default function CabinRow({ cabin }) {
               />
             </Modal.Window>
           </Modal>
+          <Menus.Menu>
+            {/* Toggle과 그 Toggle이 열고닫는 List를 엮는 id*/}
+            <Menus.Toggle id={cabinId} />
+            <Menus.List id={cabinId}>
+              <Menus.Button icon={<HiSquare2Stack />} onClick={handleDuplicate}>
+                Duplicate
+              </Menus.Button>
+              <Menus.Button icon={<HiPencil />}>Edit</Menus.Button>
+              <Menus.Button icon={<HiTrash />}>Delete</Menus.Button>
+            </Menus.List>
+          </Menus.Menu>
         </div>
       </Table.Row>
     </Table>
