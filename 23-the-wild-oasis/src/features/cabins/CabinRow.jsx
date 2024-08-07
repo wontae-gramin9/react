@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { formatCurrency } from "../../utils/helpers";
-import Button from "../../ui/Button";
 import CreateCabinForm from "./CreateCabinForm";
 import { useDeleteCabin } from "./useDeleteCabin";
 import { HiPencil, HiSquare2Stack, HiTrash } from "react-icons/hi2";
@@ -47,7 +46,7 @@ export default function CabinRow({ cabin }) {
     image,
   } = cabin;
 
-  const { isCreating, createCabin } = useCreateCabin();
+  const { isCreating: isEditing, createCabin } = useCreateCabin();
   const { isDeleting, deleteCabin } = useDeleteCabin();
 
   function handleDuplicate() {
@@ -69,25 +68,31 @@ export default function CabinRow({ cabin }) {
         <Price>{formatCurrency(regularPrice)}</Price>
         {discount && <Discount>{formatCurrency(discount)}</Discount>}
         <div>
-          <Button disabled={isCreating} onClick={handleDuplicate}>
-            <HiSquare2Stack />
-          </Button>
-
           <Modal>
-            <Modal.Open openWindowName="edit">
-              <Button>
-                <HiPencil />
-              </Button>
-            </Modal.Open>
+            <Menus.Menu>
+              {/* Toggle과 그 Toggle이 열고닫는 List를 엮는 id*/}
+              <Menus.Toggle id={cabinId} />
+              <Menus.List id={cabinId}>
+                <Menus.Button
+                  icon={<HiSquare2Stack />}
+                  disabled={isEditing}
+                  onClick={handleDuplicate}
+                >
+                  Duplicate
+                </Menus.Button>
+                <Modal.Open openWindowName="edit">
+                  <Menus.Button icon={<HiPencil />}>Edit</Menus.Button>
+                </Modal.Open>
+                <Modal.Open openWindowName="delete">
+                  <Menus.Button icon={<HiTrash />}>Delete</Menus.Button>
+                </Modal.Open>
+              </Menus.List>
+            </Menus.Menu>
+
             <Modal.Window name="edit">
               <CreateCabinForm cabinToEdit={cabin} />
             </Modal.Window>
 
-            <Modal.Open openWindowName="delete">
-              <Button>
-                <HiTrash />
-              </Button>
-            </Modal.Open>
             <Modal.Window name="delete">
               <ConfirmDelete
                 resourceName="cabin"
@@ -96,17 +101,6 @@ export default function CabinRow({ cabin }) {
               />
             </Modal.Window>
           </Modal>
-          <Menus.Menu>
-            {/* Toggle과 그 Toggle이 열고닫는 List를 엮는 id*/}
-            <Menus.Toggle id={cabinId} />
-            <Menus.List id={cabinId}>
-              <Menus.Button icon={<HiSquare2Stack />} onClick={handleDuplicate}>
-                Duplicate
-              </Menus.Button>
-              <Menus.Button icon={<HiPencil />}>Edit</Menus.Button>
-              <Menus.Button icon={<HiTrash />}>Delete</Menus.Button>
-            </Menus.List>
-          </Menus.Menu>
         </div>
       </Table.Row>
     </Table>
