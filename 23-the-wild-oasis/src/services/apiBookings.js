@@ -1,12 +1,14 @@
 import { getToday } from "../utils/helpers";
 import supabase from "./supabase";
+import { PAGE_SIZE } from "../utils/constants";
 
-export async function getBookings({ filter, sortBy }) {
-  let query = supabase
-    .from("bookings")
-    .select(
-      "id, created_at, startDate, endDate, numNights, numGuests, status, totalPrice, cabins(name), guests(fullName, email)"
-    );
+export async function getBookings({ filter, sortBy, page }) {
+  let query = supabase.from("bookings").select(
+    "id, created_at, startDate, endDate, numNights, numGuests, status, totalPrice, cabins(name), guests(fullName, email)",
+    { count: "exact" }
+    // Pagination을 위한 offset을 넣는것과 똑같은데, 필요한 데이터만 알아서 가져오겠다는
+    // Supabase 기능
+  );
   // cabinId, guestId를 받아오지만, ID만 받아오는것에서 끝나지 않고
   // foriegn key로 등록이 되어있으니(필수) 그 테이블의 값을 선택해서 받겠다는 것
   if (filter) query = query["eq"](filter.field, filter.value);
@@ -14,14 +16,20 @@ export async function getBookings({ filter, sortBy }) {
     query = query.order(sortBy.field, {
       ascending: sortBy.direction === "asc",
     });
-  const { data, error } = await query;
+  if (page) {
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    query = query.range(from, to);
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error(error);
     throw new Error("Bookings not loaded");
   }
 
-  return data;
+  return { data, count };
 }
 
 export async function getBooking(id) {
