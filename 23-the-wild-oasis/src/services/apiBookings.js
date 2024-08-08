@@ -1,6 +1,23 @@
 import { getToday } from "../utils/helpers";
 import supabase from "./supabase";
 
+export async function getBookings() {
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(
+      "id, created_at, startDate, endDate, numNights, numGuests, status, totalPrice, cabins(name), guests(fullName, email)"
+    );
+  // cabinId, guestId를 받아오지만, ID만 받아오는것에서 끝나지 않고
+  // foriegnKey로 등록이 되어있으니(필수) 그 테이블의 값을 선택해서 받겠다는 것
+
+  if (error) {
+    console.error(error);
+    throw new Error("Bookings not loaded");
+  }
+
+  return data;
+}
+
 export async function getBooking(id) {
   const { data, error } = await supabase
     .from("bookings")
