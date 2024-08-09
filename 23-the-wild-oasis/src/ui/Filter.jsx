@@ -41,6 +41,8 @@ export default function Filter({ filterField, options }) {
   function handleClick(value) {
     searchParams.set(filterField, value);
     // 실제로 url querystring에 들어가려면 setSearchParams(searchParams)해줘야 함
+    // 필터가 중복으로 먹혀있을때 필터를 바꾸면, page가 1로 변경이 안 되는 문제 해결
+    if (searchParams.get("page")) searchParams.set("page", 1);
     setSearchParams(searchParams);
   }
   return (
