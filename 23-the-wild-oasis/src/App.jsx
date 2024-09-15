@@ -16,6 +16,7 @@ import Checkin from "./pages/Checkin";
 import AppLayout from "./ui/AppLayout";
 import ProtectedRoute from "./ui/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
+import { DarkModeProvider } from "./context/DarkModeContext";
 
 // context API와 redux와 비슷하게 data가 살고있는 Client를 만든다
 const queryClient = new QueryClient({
@@ -28,55 +29,57 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <StyleSheetManager shouldForwardProp={(prop) => prop !== "variation"}>
-      <QueryClientProvider client={queryClient}>
-        <ReactQueryDevtools />
-        <Toaster
-          position="top-center"
-          gutter={12}
-          containerStyle={{ margin: "8px" }}
-          toastOptions={{
-            success: {
-              duration: 3000,
-            },
-            error: {
-              duration: 5000,
-            },
-            style: {
-              fontSize: "16px",
-              maxWidth: "500px",
-              padding: "16px 24px",
-              color: "var(--color-grey-700)",
-              backgroundColor: "var(--color-grey-0)",
-            },
-          }}
-        />
-        <BrowserRouter>
-          <Routes>
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate replace to="dashboard" />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="bookings" element={<Bookings />} />
-              <Route path="bookings/:bookingId" element={<Booking />} />
-              <Route path="checkin/:bookingId" element={<Checkin />} />
-              <Route path="cabins" element={<Cabins />} />
-              <Route path="users" element={<Users />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="account" element={<Account />} />
-            </Route>
-            <Route path="login" element={<Login />} />
-            <Route path="*" element={<PageNotFound />} />
-          </Routes>
-        </BrowserRouter>
-        <GlobalStyles />
-      </QueryClientProvider>
-    </StyleSheetManager>
+    <DarkModeProvider>
+      <StyleSheetManager shouldForwardProp={(prop) => prop !== "variation"}>
+        <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools />
+          <Toaster
+            position="top-center"
+            gutter={12}
+            containerStyle={{ margin: "8px" }}
+            toastOptions={{
+              success: {
+                duration: 3000,
+              },
+              error: {
+                duration: 5000,
+              },
+              style: {
+                fontSize: "16px",
+                maxWidth: "500px",
+                padding: "16px 24px",
+                color: "var(--color-grey-700)",
+                backgroundColor: "var(--color-grey-0)",
+              },
+            }}
+          />
+          <BrowserRouter>
+            <Routes>
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate replace to="dashboard" />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="bookings" element={<Bookings />} />
+                <Route path="bookings/:bookingId" element={<Booking />} />
+                <Route path="checkin/:bookingId" element={<Checkin />} />
+                <Route path="cabins" element={<Cabins />} />
+                <Route path="users" element={<Users />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="account" element={<Account />} />
+              </Route>
+              <Route path="login" element={<Login />} />
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
+          </BrowserRouter>
+          <GlobalStyles />
+        </QueryClientProvider>
+      </StyleSheetManager>
+    </DarkModeProvider>
   );
 }
 
