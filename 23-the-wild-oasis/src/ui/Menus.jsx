@@ -91,12 +91,13 @@ function Toggle({ id }) {
   const { openId, open, close, setPosition } = useContext(MenusContext);
 
   function handleClick(e) {
-    (openId === "") | (openId !== "") ? open(id) : close();
+    e.stopPropagation();
     const rect = e.target.closest("button").getBoundingClientRect();
     setPosition({
       x: window.innerWidth - rect.width - rect.x,
       y: rect.y + rect.height + 10,
     });
+    (openId === "") | (openId !== id) ? open(id) : close();
   }
   return (
     <StyledToggle onClick={handleClick}>
@@ -108,7 +109,14 @@ function Toggle({ id }) {
 // 이 메뉴 리스트도 overlay가 되니 createPortal로 css를 conflict를 막는다
 function List({ id, children }) {
   const { openId, close, position } = useContext(MenusContext);
-  const ref = useOutsideClick(close);
+  // 이벤트캡처링 → 이벤트버블링으로 변경하고, Toggle에서 e.stopPropagation으로 버블링을 막는다.
+  // context provider는 항상 리렌더링이 되나, 캡처링으로 하면
+  // 1. outsideClick의 close()가 openId를 먼저 ""으로 만들고
+  // 2. toggle()이 실행되어 openId === '' → open(id)가 실행되어
+  // 닫히지 않는다.
+  // 따라서 버블링으로 실행되어야 2번 이전에 1번이 먼저 실행되는걸 막을 수 있고
+  // 이후에 1번이 실행되는 걸 막기 위해서 e.stopPropagation()을 실행한다.
+  const ref = useOutsideClick(close, false);
 
   if (openId !== id) return null;
   return createPortal(
