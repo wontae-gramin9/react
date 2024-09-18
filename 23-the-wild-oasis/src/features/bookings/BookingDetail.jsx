@@ -4,6 +4,7 @@ import BookingDataBox from "./BookingDataBox";
 import Row from "../../ui/Row";
 import Heading from "../../ui/Heading";
 import Modal from "../../ui/Modal";
+import Empty from "../../ui/Empty";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 import Tag from "../../ui/Tag";
 import ButtonGroup from "../../ui/ButtonGroup";
@@ -31,7 +32,7 @@ function BookingDetail() {
   const { isDeleting, deleteBooking } = useDeleteBooking();
 
   if (isLoading) return <Spinner />;
-
+  if (!booking) return <Empty resourceName="booking" />;
   const { status, id: bookingId } = booking;
 
   const statusToTagName = {
